@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-family-montserrat: "Montserrat", sans-serif;
+  --font-family-lexend: "Lexend", sans-serif;
+}
