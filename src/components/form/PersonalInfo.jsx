@@ -16,7 +16,17 @@ const PersonalInfo = ({ register, errors }) => (
       </div>
       {/* DOB */}
       <div>
-        <input {...register("dob", { required: "Date of birth is required" })} type="date" className="bg-slate-900 outline-none p-2 rounded w-full" />
+        <input
+          {...register('age', {
+            required: 'Age is required',
+            valueAsNumber: true,
+            min: { value: 12, message: 'Must be at least 12' },
+            max: { value: 100, message: 'Unrealistic age' },
+          })}
+          type="number"
+          className="w-full bg-gray-900 rounded px-2 py-2 outline-none"
+          placeholder="Age"
+        />
         {errors.dob && <p className="text-red-600 text-xs sm:text-sm">{errors.dob.message}</p>}
       </div>
       {/* Phone */}

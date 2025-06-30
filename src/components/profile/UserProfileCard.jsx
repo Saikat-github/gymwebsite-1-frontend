@@ -44,7 +44,7 @@ const UserProfileCard = ({ user }) => {
 
         {/* Personal Info */}
         <div className="grid md:grid-cols-2 gap-4 text-sm">
-          <InfoItem icon={<Calendar size={18} />} label="Date of Birth" value={user.dob} />
+          <InfoItem icon={<Calendar size={18} />} label="Age" value={user.age} />
           <InfoItem icon={<CreditCard size={18} />} label="Gender" value={user.gender} />
           <InfoItem icon={<Ruler size={18} />} label="Height" value={`${user.height} cm`} />
           <InfoItem icon={<Weight size={18} />} label="Weight" value={`${user.weight} kg`} />
