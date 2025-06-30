@@ -119,7 +119,7 @@ const AdmissionForm = () => {
     };
 
     return (
-        <div className="min-h-screen sm:p-6 flex items-center justify-center">
+        <div className="min-h-screen sm:p-6 flex items-center justify-center mb-10">
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="bg-slate-950 p-8 shadow-lg shadow-orange-600 w-full max-w-3xl text-white px-4 sm:px-8 pb-8 rounded-lg space-y-10 max-sm:text-sm relative"

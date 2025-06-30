@@ -3,7 +3,7 @@ import { Hero, Features, CallToAction, Gallery, GymTiming, ServicesSection } fro
 
 const Home = () => {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-y-12">
       <Hero />
       <Features />
       <ServicesSection />

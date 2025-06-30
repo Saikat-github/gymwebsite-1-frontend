@@ -33,7 +33,7 @@ const RazorpayPayment = ({ title, price, memberId, navigateTo }) => {
         key,
         amount: amount * 100,
         currency: 'INR',
-        name: 'Your Gym Name',
+        name: 'Minimalist Gyms',
         description: `${planId} Membership`,
         order_id: orderId,
         handler: async (response) => {

@@ -56,7 +56,7 @@ const DayPassForm = () => {
       className='w-6 absolute right-2 top-0.5 cursor-pointer'/>
       <h2 className="text-2xl font-semibold mb-2 text-center">Day Pass : ₹99/1 day</h2>
 
-      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <form className="space-y-10" onSubmit={handleSubmit(onSubmit)}>
         {/* Name */}
         <div>
           <label className="block mb-1">Name <span className="text-red-500">*</span></label>
