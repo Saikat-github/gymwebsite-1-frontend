@@ -13,6 +13,8 @@ import { v2 as cloudinary } from "cloudinary";
 initializeApp();
 const db = getFirestore();
 
+
+
 // Define your secrets using defineSecret
 const RAZORPAY_KEY_ID = defineSecret('RAZORPAY_KEY_ID');
 const RAZORPAY_KEY_SECRET = defineSecret('RAZORPAY_KEY_SECRET');
@@ -66,7 +68,7 @@ export const createOrder = onCall({
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { amount, currency = 'INR', planId, userId } = request.data;
+    const { amount, currency = 'INR', planId, userId, dayPassId } = request.data;
 
     if (!amount || !planId || !userId) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
@@ -86,7 +88,7 @@ export const createOrder = onCall({
     const orderOptions = {
       amount: amount * 100,
       currency,
-      receipt: `gym_${userId}_${Date.now()}`,
+      receipt: `gym_${userId.slice(0, 12)}_${Date.now()}`,
       notes: {
         userId,
         planId,
@@ -98,6 +100,7 @@ export const createOrder = onCall({
 
     await db.collection('payments').doc(order.id).set({
       orderId: order.id,
+      dayPassId,
       userId,
       planId,
       amount,
@@ -160,14 +163,14 @@ export const verifyPayment = onCall({
     }
 
     const orderData = orderDoc.data();
-    const { userId, planId, amount } = orderData;
+    const { userId, planId, amount, dayPassId } = orderData;
 
     const payment = await razorpay.payments.fetch(razorpay_payment_id);
 
     //Seperate logic for day pass plan
     if (planId === "day-pass") {
       const endDateForDayPass = calculateEndDate(planId);
-      // Handle day pass payment
+
       await db.runTransaction(async (transaction) => {
         transaction.update(db.collection('payments').doc(razorpay_order_id), {
           status: 'completed',
@@ -176,22 +179,30 @@ export const verifyPayment = onCall({
           completedAt: FieldValue.serverTimestamp(),
         });
 
-        transaction.update(db.collection('dayPasses').doc(userId), {
+        transaction.update(db.collection('dayPasses').doc(dayPassId), {
           payment: 'completed',
           paymentId: razorpay_payment_id,
           paymentMethod: payment.method,
-          PaymentDate: FieldValue.serverTimestamp(),
+          paymentDate: FieldValue.serverTimestamp(),
           orderId: razorpay_order_id,
           endDate: endDateForDayPass,
           updatedAt: FieldValue.serverTimestamp(),
-        })
+        });
       });
+
       return { success: true, message: 'Payment verified and day pass activated' };
     }
 
     // Logic for other plans
     // Get user data to check for existing membership end date
-    const userDoc = await db.collection('users').doc(userId).get();
+    // Query users collection by userId field
+    const userQuery = await db.collection('users').where('userId', '==', userId).get();
+
+    if (userQuery.empty) {
+      throw new Error('User not found');
+    }
+
+    const userDoc = userQuery.docs[0];
     const userData = userDoc.data();
     const existingEndDate = userData?.endDate || null;
 
@@ -202,7 +213,6 @@ export const verifyPayment = onCall({
       transaction.update(db.collection('payments').doc(razorpay_order_id), {
         status: 'completed',
         paymentId: razorpay_payment_id,
-        signature: razorpay_signature,
         completedAt: FieldValue.serverTimestamp(),
       });
 
@@ -221,7 +231,8 @@ export const verifyPayment = onCall({
       const membershipRef = db.collection('memberships').doc();
       transaction.set(membershipRef, membershipData);
 
-      transaction.update(db.collection('users').doc(userId), {
+      // Update using the document reference, not userId
+      transaction.update(userDoc.ref, {
         currentmembershipId: membershipRef.id,
         membershipStatus: 'active',
         lastPaymentDate: FieldValue.serverTimestamp(),
@@ -283,7 +294,7 @@ export const razorpayWebhook = onRequest({
       }
 
       const orderData = orderDoc.data();
-      const { userId, planId, amount } = orderData;
+      const { userId, planId, amount, dayPassId } = orderData;
 
       // Same logic as your verifyPayment function
       if (planId === "day-pass") {
@@ -294,39 +305,48 @@ export const razorpayWebhook = onRequest({
             status: 'completed',
             paymentId: payment.id,
             completedAt: FieldValue.serverTimestamp(),
-            processedVia: 'webhook'
           });
 
-          transaction.update(db.collection('dayPasses').doc(userId), {
+          transaction.update(db.collection('dayPasses').doc(dayPassId), {
             payment: 'completed',
             paymentId: payment.id,
             paymentMethod: payment.method,
-            PaymentDate: FieldValue.serverTimestamp(),
-            orderId: orderId,
+            paymentDate: FieldValue.serverTimestamp(),
+            orderId: razorpay_order_id,
             endDate: endDateForDayPass,
             updatedAt: FieldValue.serverTimestamp(),
           });
         });
       } else {
-        // Regular membership logic
-        const userDoc = await db.collection('users').doc(userId).get();
+        // Logic for other plans
+        // Get user data to check for existing membership end date
+        // Query users collection by userId field
+        const userQuery = await db.collection('users').where('userId', '==', userId).get();
+
+        if (userQuery.empty) {
+          throw new Error('User not found');
+        }
+
+        const userDoc = userQuery.docs[0];
         const userData = userDoc.data();
         const existingEndDate = userData?.endDate || null;
+
+        // Calculate new end date based on existing membership
         const newEndDate = calculateEndDate(planId, existingEndDate);
 
         await db.runTransaction(async (transaction) => {
-          transaction.update(db.collection('payments').doc(orderId), {
+          transaction.update(db.collection('payments').doc(razorpay_order_id), {
             status: 'completed',
-            paymentId: payment.id,
+            paymentId: razorpay_payment_id,
+            signature: razorpay_signature,
             completedAt: FieldValue.serverTimestamp(),
-            processedVia: 'webhook'
           });
 
           const membershipData = {
             userId,
             planId,
-            orderId: orderId,
-            paymentId: payment.id,
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
             amount,
             status: 'active',
             endDate: newEndDate,
@@ -337,7 +357,8 @@ export const razorpayWebhook = onRequest({
           const membershipRef = db.collection('memberships').doc();
           transaction.set(membershipRef, membershipData);
 
-          transaction.update(db.collection('users').doc(userId), {
+          // Update using the document reference, not userId
+          transaction.update(userDoc.ref, {
             currentmembershipId: membershipRef.id,
             membershipStatus: 'active',
             lastPaymentDate: FieldValue.serverTimestamp(),
@@ -347,7 +368,6 @@ export const razorpayWebhook = onRequest({
         });
       }
     }
-
     res.status(200).send('OK');
   } catch (error) {
     console.error('Webhook error:', error);
@@ -373,20 +393,20 @@ export const deleteCloudinaryImage = onCall({
   try {
     // Validate input
     const { publicId } = request.data;
-    
+
     if (!publicId || typeof publicId !== 'string') {
       throw new HttpsError('invalid-argument', 'Valid publicId is required');
     }
 
     // Delete image from Cloudinary
     const result = await cloudinary.uploader.destroy(publicId);
-    
+
     if (result.result !== 'ok') {
       throw new HttpsError('not-found', 'Image not found or already deleted');
     }
 
     logger.info(`Image deleted successfully: ${publicId}`);
-    
+
     return {
       success: true,
       publicId: publicId,
@@ -395,11 +415,11 @@ export const deleteCloudinaryImage = onCall({
 
   } catch (error) {
     logger.error('Error deleting image:', error);
-    
+
     if (error instanceof HttpsError) {
       throw error;
     }
-    
+
     throw new HttpsError('internal', 'Failed to delete image');
   }
 });

@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import { AlertTriangle, UserX, Trash2 } from 'lucide-react'
 import { useState } from 'react';
 import ConfirmationModal from '../ConfirmationModal';
-import { deleteDocument } from '../../services/firebase/db';
+import { deleteDocument, deleteUserProfileComplete } from '../../services/firebase/db';
 import { deleteUserAccount } from '../../services/firebase/auth';
 import { toast } from 'react-toastify'
 import { useNavigate } from "react-router-dom"
@@ -36,7 +36,7 @@ const DeleteButtons = ({ accountId, id }) => {
             setLoading(true)
             if (btn === "account") {
                 if (id) {
-                    const result1 = await deleteDocument("users", id)
+                    const result1 = await deleteUserProfileComplete(id, accountId)
                     toast.info(result1.message)
                 }
                 const result2 = await deleteUserAccount()
@@ -44,25 +44,25 @@ const DeleteButtons = ({ accountId, id }) => {
                     toast.success(result2.message)
                     navigate("/login")
                 } else {
-                    toast.error("Please re-login before deleting your account and all other data")
+                    toast.error("Please re-login before deleting your account")
+                    navigate("/profile")
                 }
-
             } else {
-                const result = await deleteDocument("users", id)
+                const result = await deleteUserProfileComplete(id, accountId)
                 if (result.success) {
                     toast.success(result.message)
-                    navigate("/profile")
                 } else {
                     toast.error(result.message)
                 }
             }
         } catch (error) {
-            console.log(error)
             toast.error(error.message)
         } finally {
-            setLoading(false);
-            closeModal()
-            getMemberInfo()
+            setTimeout(() => {
+                closeModal();
+                getMemberInfo();
+                setLoading(false);
+            }, 1000); // Delay to let toast appear
         }
     }
 

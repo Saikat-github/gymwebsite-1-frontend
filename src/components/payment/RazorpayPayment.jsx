@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const RazorpayPayment = ({ title, price, memberId, navigateTo }) => {
+const RazorpayPayment = ({ title, price, userId, email, name, navigateTo, dayPassId }) => {
   const { getMemberInfo } = useContext(AuthContext);
   const [loader, setLoader] = useState(false)
   const createOrder = httpsCallable(functions, 'createOrder');
@@ -16,21 +16,22 @@ const RazorpayPayment = ({ title, price, memberId, navigateTo }) => {
 
   const navigate = useNavigate();
 
-  const handlePayment = async (planId, amount, userId) => {
+  const handlePayment = async (amount, planId, userId, email, name, dayPassId) => {
     try {
       setLoader(true);
       // Step 1: Create order
       const orderResult = await createOrder({
         amount,
         planId,
-        userId
+        userId,
+        dayPassId
       });
 
       const { orderId, key } = orderResult.data;
 
       // Step 2: Initialize Razorpay
       const options = {
-        key,
+       key,
         amount: amount * 100,
         currency: 'INR',
         name: 'Minimalist Gyms',
@@ -58,8 +59,8 @@ const RazorpayPayment = ({ title, price, memberId, navigateTo }) => {
           }
         },
         prefill: {
-          name: 'Customer Name',
-          email: 'customer@example.com',
+          name: name || 'Customer',
+          email: email || 'customer@example.com',
         },
         theme: {
           color: '#3399cc',
@@ -87,7 +88,7 @@ const RazorpayPayment = ({ title, price, memberId, navigateTo }) => {
     <div className="flex justify-center my-28">
       <button
         disabled={loader}
-        onClick={() => handlePayment(title.toLowerCase(), price, memberId)}
+        onClick={() => handlePayment(price, title.toLowerCase(), userId, email, name, dayPassId)}
         className="py-2 rounded border-2 border-orange-600 flex gap-2 px-2 hover:gap-4 cursor-pointer transition-all duration-200"
       >
         Pay ₹{price} for {title} Plan {loader ? <Loader2 className="animate-spin" /> : <ArrowRight />}

@@ -21,7 +21,7 @@ bg-opacity-50 z-50 mx-2">
                   ?
                   <div>
                     <div className="text-xs mt-4 space-y-2">
-                      <li>All of your <span className="text-red-600">profile data</span> (if any) will be permanently erased</li>
+                      <li>All of your <span className="text-red-600">profile data, associated daypasses, payments details</span> (if any) will be permanently erased</li>
                       <li>Any ongoing <span className="text-red-600">membership plan</span> (if any) will be removed</li>
                       <li>Your complete <span className="text-red-600">account data</span> will be permanently erased from our server</li>
                       <li>You won't be able to recover any of the above data in the future</li>
@@ -32,6 +32,7 @@ bg-opacity-50 z-50 mx-2">
                     <div className="text-xs mt-4 space-y-2">
                       <li>All of your profile data (if any) will be permanently erased</li>
                       <li>Any ongoing membership plan (if any) will be removed</li>
+                      <li>All of your payments and daypass details (if any) will be removed</li>
                       <li>You won't be able to recover any of the above data in the future</li>
                     </div>
                   </div>

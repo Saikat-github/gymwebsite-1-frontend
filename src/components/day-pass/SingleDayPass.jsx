@@ -23,7 +23,7 @@ const SingleDayPass = ({ dayPass }) => {
     paymentId,
     createdAt,
     userId,
-    PaymentDate,
+    paymentDate,
     paymentMethod,
     endDate,
   } = dayPass;
@@ -104,7 +104,7 @@ const SingleDayPass = ({ dayPass }) => {
           <Field icon={Clock} label="No. of Days" value={noOfDays} />
           <Field icon={CheckCircle} label="Payment" value={payment} />
           {paymentId && <Field icon={CheckCircle} label="Payment ID" value={paymentId} />}
-          {PaymentDate && <Field icon={Calendar} label="Payment Date" value={getISTTime(PaymentDate)} />}
+          {paymentDate && <Field icon={Calendar} label="Payment Date" value={getISTTime(paymentDate)} />}
           {endDate && <Field icon={Calendar} label="Expires On" value={getISTTime(endDate)} />}
           <Field icon={availed ? CheckCircle : XCircle} label="Availed" value={availed ? 'Yes' : 'No'} />
         </div>

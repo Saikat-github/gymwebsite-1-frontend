@@ -14,7 +14,7 @@ const MembershipDetails = () => {
   const [lastDoc, setLastDoc] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [loader, setLoader] = useState(true)
-  const { memberData } = useContext(AuthContext);
+  const { memberData, user } = useContext(AuthContext);
 
   if (!memberData) {
     return <Navigate to="/" />
@@ -24,7 +24,7 @@ const MembershipDetails = () => {
     const getMembershipHistory = async () => {
       try {
         setLoader(true)
-        const result = await getDocuments('memberships', memberData?.id);
+        const result = await getDocuments('memberships', user.uid);
         if (result.success) {
           setDocuments(result.data);
           setLastDoc(result.lastDoc);
@@ -48,7 +48,7 @@ const MembershipDetails = () => {
 
     try {
       setLoader(true);
-      const result = await getDocuments('memberships', memberData?.id, lastDoc);
+      const result = await getDocuments('memberships', user.uid, lastDoc);
       if (result.success) {
         setDocuments(prev => [...prev, ...result.data]);
         setLastDoc(result.lastDoc);

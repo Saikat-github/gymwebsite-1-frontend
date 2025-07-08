@@ -16,12 +16,23 @@ const SinglePlan = ({ title, price, duration, features, popular, discount }) => 
             toast.error("Please login to select a plan");
             return navigate("/login");
         }
-        if(title === "Day-Pass") {
+        if (title === "Day-Pass") {
             return navigate("/day-pass")
         }
 
         if (memberData) {
-            navigate('/payment-page', { state: { title, price, memberId: memberData.id, navigateTo: "/membership-details" } });
+            navigate('/payment-page',
+                {
+                    state:
+                    {
+                        title,
+                        price,
+                        userId: user.uid,
+                        email: user.email,
+                        name: user.displayName,
+                        navigateTo: "/membership-details"
+                    }
+                });
         } else {
             toast.error("Please complete your profile to select a plan");
             navigate("/profile")

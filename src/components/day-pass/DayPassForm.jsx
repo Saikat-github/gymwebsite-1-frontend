@@ -33,9 +33,12 @@ const DayPassForm = () => {
         navigate('/payment-page', {
           state:
           {
+            dayPassId: result.id,
             title: "Day-Pass",
             price: amount,
-            memberId: result.id,
+            userId: user.uid,
+            email: user.email,
+            name: user.displayName,
             navigateTo: "/day-pass/get-passes"
           }
         });
