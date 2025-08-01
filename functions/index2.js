@@ -58,7 +58,7 @@ function calculateEndDate(planId, existingEndDate = null) {
 
 
 
-// Updated createOrder function
+// createOrder function with secret bindings
 export const createOrder = onCall({
   secrets: [RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET],
   cors: true,
@@ -68,11 +68,16 @@ export const createOrder = onCall({
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { amount, currency = 'INR', planId, userId, dayPassId, planDocId } = request.data;
+    const { amount, currency = 'INR', planId, userId, dayPassId } = request.data;
 
-    if (!amount || !planId || !userId || !planDocId) {
+    if (!amount || !planId || !userId) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
+
+    // const userDoc = await db.collection('users').doc(userId).get();
+    // if (!userDoc.exists) {
+    //   throw new HttpsError('not-found', 'User not found');
+    // }
 
     // Initialize Razorpay inside the function to access secrets' values
     const razorpay = new Razorpay({
@@ -93,13 +98,11 @@ export const createOrder = onCall({
 
     const order = await razorpay.orders.create(orderOptions);
 
-    // Store order with planDocId for later use
     await db.collection('payments').doc(order.id).set({
       orderId: order.id,
       dayPassId,
       userId,
       planId,
-      planDocId, // Store the plan document ID
       amount,
       currency,
       status: 'created',
@@ -122,7 +125,7 @@ export const createOrder = onCall({
 
 
 
-// Updated verifyPayment function
+// verifyPayment function with secret bindings
 export const verifyPayment = onCall({
   secrets: [RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET],
   cors: true,
@@ -160,11 +163,11 @@ export const verifyPayment = onCall({
     }
 
     const orderData = orderDoc.data();
-    const { userId, planId, amount, dayPassId, planDocId } = orderData;
+    const { userId, planId, amount, dayPassId } = orderData;
 
     const payment = await razorpay.payments.fetch(razorpay_payment_id);
 
-    //Separate logic for day pass plan
+    //Seperate logic for day pass plan
     if (planId === "day-pass") {
       const endDateForDayPass = calculateEndDate(planId);
 
@@ -185,19 +188,14 @@ export const verifyPayment = onCall({
           endDate: endDateForDayPass,
           updatedAt: FieldValue.serverTimestamp(),
         });
-
-        // Increment plan counter for day pass
-        if (planDocId) {
-          transaction.update(db.collection('plans').doc(planDocId), {
-            noOfChosen: FieldValue.increment(1)
-          });
-        }
       });
 
       return { success: true, message: 'Payment verified and day pass activated' };
     }
 
     // Logic for other plans
+    // Get user data to check for existing membership end date
+    // Query users collection by userId field
     const userQuery = await db.collection('users').where('userId', '==', userId).get();
 
     if (userQuery.empty) {
@@ -208,6 +206,7 @@ export const verifyPayment = onCall({
     const userData = userDoc.data();
     const existingEndDate = userData?.endDate || null;
 
+    // Calculate new end date based on existing membership
     const newEndDate = calculateEndDate(planId, existingEndDate);
 
     await db.runTransaction(async (transaction) => {
@@ -232,6 +231,7 @@ export const verifyPayment = onCall({
       const membershipRef = db.collection('memberships').doc();
       transaction.set(membershipRef, membershipData);
 
+      // Update using the document reference, not userId
       transaction.update(userDoc.ref, {
         currentmembershipId: membershipRef.id,
         membershipStatus: 'active',
@@ -239,13 +239,6 @@ export const verifyPayment = onCall({
         endDate: newEndDate,
         updatedAt: FieldValue.serverTimestamp(),
       });
-
-      // Increment plan counter for membership plans
-      if (planDocId) {
-        transaction.update(db.collection('plans').doc(planDocId), {
-          noOfChosen: FieldValue.increment(1)
-        });
-      }
     });
 
     return { success: true, message: 'Payment verified and membership activated' };
@@ -255,12 +248,20 @@ export const verifyPayment = onCall({
   }
 });
 
-// Updated webhook function
+
+
+
+
+
+
+
+//Webhook to handle Razorpay events
 export const razorpayWebhook = onRequest({
   secrets: [RAZORPAY_WEBHOOK_SECRET],
-  cors: false,
+  cors: false, // Disable CORS for webhooks
 }, async (req, res) => {
   try {
+    // Only allow POST requests
     if (req.method !== 'POST') {
       return res.status(405).send('Method not allowed');
     }
@@ -268,6 +269,7 @@ export const razorpayWebhook = onRequest({
     const signature = req.headers['x-razorpay-signature'];
     const body = JSON.stringify(req.body);
 
+    // Verify webhook signature
     const expectedSignature = crypto
       .createHmac('sha256', RAZORPAY_WEBHOOK_SECRET.value())
       .update(body)
@@ -280,18 +282,21 @@ export const razorpayWebhook = onRequest({
 
     const event = req.body;
 
+    // Handle payment.captured event
     if (event.event === 'payment.captured') {
       const payment = event.payload.payment.entity;
       const orderId = payment.order_id;
 
+      // Check if payment already processed
       const orderDoc = await db.collection('payments').doc(orderId).get();
       if (!orderDoc.exists || orderDoc.data().status === 'completed') {
         return res.status(200).send('Already processed');
       }
 
       const orderData = orderDoc.data();
-      const { userId, planId, amount, dayPassId, planDocId } = orderData;
+      const { userId, planId, amount, dayPassId } = orderData;
 
+      // Same logic as your verifyPayment function
       if (planId === "day-pass") {
         const endDateForDayPass = calculateEndDate(planId);
 
@@ -307,19 +312,15 @@ export const razorpayWebhook = onRequest({
             paymentId: payment.id,
             paymentMethod: payment.method,
             paymentDate: FieldValue.serverTimestamp(),
-            orderId: orderId,
+            orderId: razorpay_order_id,
             endDate: endDateForDayPass,
             updatedAt: FieldValue.serverTimestamp(),
           });
-
-          // Increment plan counter
-          if (planDocId) {
-            transaction.update(db.collection('plans').doc(planDocId), {
-              noOfChosen: FieldValue.increment(1)
-            });
-          }
         });
       } else {
+        // Logic for other plans
+        // Get user data to check for existing membership end date
+        // Query users collection by userId field
         const userQuery = await db.collection('users').where('userId', '==', userId).get();
 
         if (userQuery.empty) {
@@ -329,20 +330,23 @@ export const razorpayWebhook = onRequest({
         const userDoc = userQuery.docs[0];
         const userData = userDoc.data();
         const existingEndDate = userData?.endDate || null;
+
+        // Calculate new end date based on existing membership
         const newEndDate = calculateEndDate(planId, existingEndDate);
 
         await db.runTransaction(async (transaction) => {
-          transaction.update(db.collection('payments').doc(orderId), {
+          transaction.update(db.collection('payments').doc(razorpay_order_id), {
             status: 'completed',
-            paymentId: payment.id,
+            paymentId: razorpay_payment_id,
+            signature: razorpay_signature,
             completedAt: FieldValue.serverTimestamp(),
           });
 
           const membershipData = {
             userId,
             planId,
-            orderId: orderId,
-            paymentId: payment.id,
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
             amount,
             status: 'active',
             endDate: newEndDate,
@@ -353,6 +357,7 @@ export const razorpayWebhook = onRequest({
           const membershipRef = db.collection('memberships').doc();
           transaction.set(membershipRef, membershipData);
 
+          // Update using the document reference, not userId
           transaction.update(userDoc.ref, {
             currentmembershipId: membershipRef.id,
             membershipStatus: 'active',
@@ -360,13 +365,6 @@ export const razorpayWebhook = onRequest({
             endDate: newEndDate,
             updatedAt: FieldValue.serverTimestamp(),
           });
-
-          // Increment plan counter
-          if (planDocId) {
-            transaction.update(db.collection('plans').doc(planDocId), {
-              noOfChosen: FieldValue.increment(1)
-            });
-          }
         });
       }
     }
@@ -376,6 +374,7 @@ export const razorpayWebhook = onRequest({
     res.status(500).send('Internal error');
   }
 });
+
 
 
 

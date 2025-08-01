@@ -6,8 +6,16 @@ import { toast } from 'react-toastify';
 
 
 
-const SinglePlan = ({ title, price, duration, features, popular, discount }) => {
+
+const capitalizeFirstLetter = str => 
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+
+
+
+
+const SinglePlan = ({ plan }) => {
     const { memberData, user } = useContext(AuthContext);
+    const { title, price, duration, features, popular, discount } = plan;
 
     const navigate = useNavigate();
 
@@ -25,11 +33,12 @@ const SinglePlan = ({ title, price, duration, features, popular, discount }) => 
                 {
                     state:
                     {
-                        title,
-                        price,
+                        amount: price,
+                        planId: title,
                         userId: user.uid,
                         email: user.email,
                         name: user.displayName,
+                        id: plan.id,
                         navigateTo: "/membership-details"
                     }
                 });
@@ -42,16 +51,16 @@ const SinglePlan = ({ title, price, duration, features, popular, discount }) => 
 
     return (
         <div
-            className={`bg-gradient-to-b from-gray-900 to-blue-950 p-8 rounded-lg shadow-md relative ${popular ? 'border-2 border-orange-500' : ''}`}
+            className={`bg-gradient-to-b from-gray-900 to-blue-950 p-8 rounded-lg shadow-md relative ${popular === "yes" ? 'border-2 border-orange-500' : ''}`}
         >
-            {popular && (
+            {popular === "yes" && (
                 <div className="absolute top-0 right-0 bg-orange-600 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
                     Popular
                 </div>
             )}
-            <h3 className="text-lg sm:text-xl font-bold mb-4">{title}</h3>
+            <h3 className="text-2xl sm:text-xl font-bold mb-4">{capitalizeFirstLetter(title)}</h3>
             <p className="text-xl sm:text-3xl font-bold mb-4 flex items-center">
-                <IndianRupee className='w-4' />{price}/{duration}
+                <IndianRupee className='w-4' />{price}/{duration} days
                 <span className="text-lg text-gray-500"></span>
             </p>
             {discount

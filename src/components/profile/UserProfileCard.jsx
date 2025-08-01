@@ -19,7 +19,7 @@ const UserProfileCard = ({ user }) => {
             className="w-32 h-32 object-cover rounded-full"
           />
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-semibold tracking-wide">{user.firstName} {user.lastName}</h2>
+            <h2 className="text-2xl font-semibold tracking-wide">{user.name}</h2>
             <p className="text-slate-100 flex items-center justify-center md:justify-start gap-2"><Mail size={16} /> {user.userEmail}</p>
             <p className="text-slate-100 flex items-center justify-center md:justify-start gap-2"><Phone size={16} /> {user.phone}</p>
           </div>

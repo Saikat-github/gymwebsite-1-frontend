@@ -11,7 +11,7 @@ const AuthContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
 
-    const getMemberInfo = async () => {
+  const getMemberInfo = async () => {
     setLoading(true);
     try {
       if (user) {
@@ -30,6 +30,7 @@ const AuthContextProvider = ({ children }) => {
       setLoading(false)
     }
   }
+
 
 
   useEffect(() => {
@@ -61,6 +62,8 @@ const AuthContextProvider = ({ children }) => {
 
     return () => unsubscribe();
   }, []);
+
+
 
   const value = {
     user,

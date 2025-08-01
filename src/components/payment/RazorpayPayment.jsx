@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const RazorpayPayment = ({ title, price, userId, email, name, navigateTo, dayPassId }) => {
+const RazorpayPayment = ({ amount, planId, userId, email, name, dayPassId, id, navigateTo }) => {
   const { getMemberInfo } = useContext(AuthContext);
   const [loader, setLoader] = useState(false)
   const createOrder = httpsCallable(functions, 'createOrder');
@@ -16,7 +16,7 @@ const RazorpayPayment = ({ title, price, userId, email, name, navigateTo, dayPas
 
   const navigate = useNavigate();
 
-  const handlePayment = async (amount, planId, userId, email, name, dayPassId) => {
+  const handlePayment = async () => {
     try {
       setLoader(true);
       // Step 1: Create order
@@ -24,7 +24,8 @@ const RazorpayPayment = ({ title, price, userId, email, name, navigateTo, dayPas
         amount,
         planId,
         userId,
-        dayPassId
+        dayPassId,
+        planDocId: id
       });
 
       const { orderId, key } = orderResult.data;
@@ -88,10 +89,10 @@ const RazorpayPayment = ({ title, price, userId, email, name, navigateTo, dayPas
     <div className="flex justify-center my-28">
       <button
         disabled={loader}
-        onClick={() => handlePayment(price, title.toLowerCase(), userId, email, name, dayPassId)}
+        onClick={() => handlePayment()}
         className="py-2 rounded border-2 border-orange-600 flex gap-2 px-2 hover:gap-4 cursor-pointer transition-all duration-200"
       >
-        Pay ₹{price} for {title} Plan {loader ? <Loader2 className="animate-spin" /> : <ArrowRight />}
+        Pay ₹{amount} for {planId} Plan {loader ? <Loader2 className="animate-spin" /> : <ArrowRight />}
       </button>
     </div>
   );

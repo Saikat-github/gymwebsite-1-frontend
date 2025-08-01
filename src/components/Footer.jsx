@@ -2,6 +2,7 @@ import {Instagram, Twitter, Facebook, Dumbbell} from 'lucide-react'
 
 
 
+
 const Footer = () => {
   return (
       <footer id='footer' className="bg-slate-950 text-white py-20 mt-32">

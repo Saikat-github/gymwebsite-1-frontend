@@ -6,15 +6,10 @@ const PersonalInfo = ({ register, errors }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* First Name */}
       <div>
-        <input {...register("firstName", { required: "First name is required" })} placeholder="First Name" className="bg-slate-900 outline-none p-2 rounded w-full" />
+        <input {...register("name", { required: "Name is required" })} placeholder="Name" className="bg-slate-900 outline-none p-2 rounded w-full" />
         {errors.firstName && <p className="text-red-600 text-xs sm:text-sm">{errors.firstName.message}</p>}
       </div>
       {/* Last Name */}
-      <div>
-        <input {...register("lastName", { required: "Last name is required" })} placeholder="Last Name" className="bg-slate-900 outline-none p-2 rounded w-full" />
-        {errors.lastName && <p className="text-red-600 text-xs sm:text-sm">{errors.lastName.message}</p>}
-      </div>
-      {/* DOB */}
       <div>
         <input
           {...register('age', {

@@ -86,11 +86,13 @@ const AdmissionForm = () => {
             setLoader(true);
             const imageObj = images.imageUrl || memberData?.imageUrl;
             const aadharObj = images.aadharUrl || memberData?.aadharUrl;
+            const lowerCaseName = rest.name ? rest.name.toLowerCase() : "";
 
             const payload = {
                 ...rest,
                 imageUrl: imageObj,      // now it's an object: { secure_url, public_id }
-                aadharUrl: aadharObj,    // same here
+                aadharUrl: aadharObj, 
+                lowerCaseName,   // same here
                 ...(memberData ? {} : {
                     userId: user.uid,
                     userEmail: user.email,

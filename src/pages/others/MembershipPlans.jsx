@@ -1,4 +1,9 @@
+import { useEffect, useState } from 'react';
 import { SinglePlan } from '../../components';
+import { getDocuments } from '../../services/firebase/db';
+import { set } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import { Loader2 } from 'lucide-react';
 
 
 const plans = [
@@ -51,19 +56,54 @@ const plans = [
 const reversedPlans = plans.reverse()
 
 const MembershipPlans = () => {
+  const [plans, setPlans] = useState([]);
+  const [loader, setLoader] = useState(false);
+
+  const fetchPlans = async () => {
+    try {
+      setLoader(true);
+      const result = await getDocuments('plans');
+      if (result.success) {
+        setPlans(result.data);
+      } else {
+        toast.error('Failed to fetch plans');
+      }
+    } catch (error) {
+      toast.error('Error fetching plans: ' + error.message);
+    } finally {
+      setLoader(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchPlans();
+  }, [])
+
+
+
   return (
-    <div className="py-12">
+    <div className="py-12 text-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold ">Membership Plans</h2>
           <p className="mt-4 text-lg flex justify-center items-center gap-2"> Choose the plan that fits your needs</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {reversedPlans.map(({ title, price, duration, features, popular, discount }, index) => (
-            <SinglePlan title={title} price={price} duration={duration} features={features} popular={popular} discount={discount} key={title} />
-          ))}
-        </div>
+        {loader && <Loader2 className='w-6 mx-auto animate-spin' />}
+
+
+        {plans.length > 0
+          ?
+          <div className="grid md:grid-cols-2 gap-8">
+            {
+              plans.map((plan, index) => (
+                <SinglePlan key={index} plan={plan} />
+              ))
+            }
+          </div>
+          :
+          <p className={`text-center text-gray-400 ${loader && "hidden"}`}>No plans found!</p>}
+
       </div>
     </div>
   );

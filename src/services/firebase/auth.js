@@ -1,5 +1,5 @@
 // src/firebase/auth.js
-import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { auth } from "./config";
 
 // Firebase auth instance
@@ -101,6 +101,21 @@ export const signInWithGoogle = async () => {
   }
 }
 
+
+
+// export const handleGoogleRedirectResult = async () => {
+//   try {
+//     const result = await getRedirectResult(auth);
+//     console.log(result)
+//     if (result && result.user) {
+//       return { success: true, user: result.user };
+//     } else {
+//       return { success: false, message: "No redirect result available." };
+//     }
+//   } catch (error) {
+//     return { success: false, error: error.message };
+//   }
+// };
 
 
 

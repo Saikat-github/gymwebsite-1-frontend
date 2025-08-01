@@ -6,7 +6,6 @@ const PaymentPage = () => {
   const location = useLocation();
   const { state } = location;
 
-
   if (!state) {
     return <Navigate to={"/plans"} />
   }
