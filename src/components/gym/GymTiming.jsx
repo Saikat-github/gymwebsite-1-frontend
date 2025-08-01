@@ -61,12 +61,12 @@ const GymTiming = () => {
 
       <div className="space-y-4 text-gray-300">
         {daysOfWeek.map((day) => (
-          <div key={day} className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-            <label className="sm:w-28 font-semibold">{day} </label>
+          <div key={day} className="flex flex-row sm:items-center gap-4">
+            <label className="w-28 font-semibold">{day} </label>
             {Object.keys(savedSchedule).length > 0 && savedSchedule[day]
-              ? <p><p>
+              ? <p><span>
                 {convertTo12Hour(savedSchedule[day].open)} to {convertTo12Hour(savedSchedule[day].close)}
-              </p>
+              </span>
               </p>
               : <p>00:00 to 00:00</p>
             }

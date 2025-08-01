@@ -9,6 +9,7 @@ const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [memberData, setMemberData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState([]);
 
 
   const getMemberInfo = async () => {
@@ -31,6 +32,23 @@ const AuthContextProvider = ({ children }) => {
     }
   }
 
+
+
+  const fetchPlans = async () => {
+    try {
+      setLoading(true);
+      const result = await getDocuments('plans');
+      if (result.success) {
+        setPlans(result.data);
+      } else {
+        toast.error('Failed to fetch plans');
+      }
+    } catch (error) {
+      toast.error('Error fetching plans: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
 
   useEffect(() => {
@@ -64,6 +82,11 @@ const AuthContextProvider = ({ children }) => {
   }, []);
 
 
+  useEffect(() => {
+    fetchPlans();
+  }, [])
+
+
 
   const value = {
     user,
@@ -71,7 +94,8 @@ const AuthContextProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user,
     setMemberData,
-    getMemberInfo
+    getMemberInfo,
+    plans
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
