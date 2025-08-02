@@ -67,7 +67,7 @@ const SinglePlan = ({ plan }) => {
                 &&
                 <p className='flex items-center'>
                     <Tag className='h-5 w-5 text-green-500 mr-2' />
-                    <IndianRupee className='w-4' />{discount}
+                    {discount}% Off
                 </p>}
             <ul className="mb-8 space-y-2">
                 {features.map((feature, idx) => (
