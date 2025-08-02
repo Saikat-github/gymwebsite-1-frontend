@@ -7,14 +7,13 @@ const PersonalInfo = ({ register, errors }) => (
       {/* First Name */}
       <div>
         <input {...register("name", { required: "Name is required" })} placeholder="Name" className="bg-slate-900 outline-none p-2 rounded w-full" />
-        {errors.firstName && <p className="text-red-600 text-xs sm:text-sm">{errors.firstName.message}</p>}
+        {errors.name && <p className="text-red-600 text-xs sm:text-sm">{errors.name.message}</p>}
       </div>
       {/* Last Name */}
       <div>
         <input
           {...register('age', {
             required: 'Age is required',
-            valueAsNumber: true,
             min: { value: 12, message: 'Must be at least 12' },
             max: { value: 100, message: 'Unrealistic age' },
           })}
@@ -22,7 +21,7 @@ const PersonalInfo = ({ register, errors }) => (
           className="w-full bg-gray-900 rounded px-2 py-2 outline-none"
           placeholder="Age"
         />
-        {errors.dob && <p className="text-red-600 text-xs sm:text-sm">{errors.dob.message}</p>}
+        {errors.age && <p className="text-red-600 text-xs sm:text-sm">{errors.age.message}</p>}
       </div>
       {/* Phone */}
       <div>
