@@ -24,7 +24,7 @@ const SinglePlan = ({ plan }) => {
             toast.error("Please login to select a plan");
             return navigate("/login");
         }
-        if (title === "Day-Pass") {
+        if (title === "day-pass") {
             return navigate("/day-pass")
         }
 

@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { AuthContext } from '../context/AuthContext'
+import { AuthContext } from '../../context/AuthContext'
 import { Link, Navigate } from 'react-router-dom'
-import { MembershipHistoryCard } from '../components';
+import { MembershipHistoryCard } from '../../components';
 import { User, CalendarClock, Info, Loader2, Clock } from "lucide-react";
-import { getDocuments } from '../services/firebase/db';
+import { getDocuments } from '../../services/firebase/db';
 import { toast } from 'react-toastify';
-import { getISTTime } from '../utils/utilFunctions';
+import { getISTTime } from '../../utils/utilFunctions';
 
 
 

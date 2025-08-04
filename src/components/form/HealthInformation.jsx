@@ -7,37 +7,88 @@ const HealthInformation = ({ register, errors }) => (
       <Dumbbell size={20} /> Health Information
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {[
-        {
-          name: "weight",
-          type: "number",
-          placeholder: "Weight (in kg)",
-          required: "Weight is required"
-        },
-        {
-          name: "height",
-          type: "number",
-          placeholder: "Height (in cm)",
-          required: "Height is required"
-        },
-        {
-          name: "medicalCondition",
-          type: "text",
-          placeholder: "Medical Condition (if any)",
-          required: false
-        }
-      ].map(({ name, type, placeholder, required }, idx) => (
-        <div key={idx}>
-          <input
-            {...register(name, required ? { required } : {})}
-            type={type}
-            placeholder={placeholder}
-            className="bg-slate-900 outline-none p-2 rounded w-full"
-          />
-          {errors[name] && <p className="text-red-600 text-xs sm:text-sm">{errors[name].message}</p>}
-        </div>
-      ))}
+      {/* Weight Field */}
+      <div>
+        <input
+          type="text"
+          inputMode="numeric" // Mobile keyboards will show numeric keypad
+          pattern="[0-9]*" // Only allow numbers
+          placeholder="Weight (in kg)"
+          {...register('weight', {
+            required: 'Weight is required',
+            pattern: {
+              value: /^[0-9]+$/,
+              message: 'Weight must be a number'
+            },
+            validate: {
+              min: (value) => {
+                const num = parseInt(value, 10);
+                return num >= 30 || 'Weight must be at least 30 kg';
+              },
+              max: (value) => {
+                const num = parseInt(value, 10);
+                return num <= 300 || 'Weight must be less than 300 kg';
+              }
+            }
+          })}
+          className="bg-slate-900 outline-none p-2 rounded w-full"
+          onKeyPress={(e) => {
+            // Only allow numbers
+            if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
+        />
+        {errors.weight && <p className="text-red-600 text-xs sm:text-sm">{errors.weight.message}</p>}
+      </div>
+
+      {/* Height Field */}
+      <div>
+        <input
+          type="text"
+          inputMode="numeric" // Mobile keyboards will show numeric keypad
+          pattern="[0-9]*" // Only allow numbers
+          placeholder="Height (in cm)"
+          {...register('height', {
+            required: 'Height is required',
+            pattern: {
+              value: /^[0-9]+$/,
+              message: 'Height must be a number'
+            },
+            validate: {
+              min: (value) => {
+                const num = parseInt(value, 10);
+                return num >= 100 || 'Height must be at least 100 cm';
+              },
+              max: (value) => {
+                const num = parseInt(value, 10);
+                return num <= 250 || 'Height must be less than 250 cm';
+              }
+            }
+          })}
+          className="bg-slate-900 outline-none p-2 rounded w-full"
+          onKeyPress={(e) => {
+            // Only allow numbers
+            if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
+        />
+        {errors.height && <p className="text-red-600 text-xs sm:text-sm">{errors.height.message}</p>}
+      </div>
+
+      {/* Medical Condition Field */}
+      <div>
+        <input
+          {...register("medicalCondition")}
+          type="text"
+          placeholder="Medical Condition (if any)"
+          className="bg-slate-900 outline-none p-2 rounded w-full"
+        />
+        {errors.medicalCondition && <p className="text-red-600 text-xs sm:text-sm">{errors.medicalCondition.message}</p>}
+      </div>
     </div>
+    
     <div className='mt-4'>
       <select
         {...register("fitnessGoal", { required: "Fitness goal is required" })}

@@ -24,10 +24,7 @@ const AllDayPasses = () => {
           'dayPasses',
           user.uid,
           null,
-          5,
-          [
-            { field: "payment", operator: "==", value: "completed" }
-          ]
+          10
         );
         if (result.success) {
           setDocuments(result.data);
@@ -56,17 +53,13 @@ const AllDayPasses = () => {
         'dayPasses',
         user.uid,
         lastDoc,
-        5,
-        [
-          { field: "payment", operator: "==", value: "completed" }
-        ]
+        10
       );
       if (result.success) {
         setDocuments(prev => [...prev, ...result.data]);
         setLastDoc(result.lastDoc);
         setHasMore(result.hasMore);
       }
-      console.log(result)
     } catch (error) {
       toast.error(error.message);
       console.error("Error loading more documents:", error);

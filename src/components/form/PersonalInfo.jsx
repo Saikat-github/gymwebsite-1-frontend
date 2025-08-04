@@ -6,20 +6,35 @@ const PersonalInfo = ({ register, errors }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* First Name */}
       <div>
-        <input {...register("name", { required: "Name is required" })} placeholder="Name" className="bg-slate-900 outline-none p-2 rounded w-full" />
+        <input
+          {...register("name", { required: "Name is required" })}
+          placeholder="Name" className="bg-slate-900 outline-none p-2 rounded w-full" />
         {errors.name && <p className="text-red-600 text-xs sm:text-sm">{errors.name.message}</p>}
       </div>
       {/* Last Name */}
       <div>
         <input
+          inputMode="numeric" // Mobile keyboards will show numeric keypad
+          pattern="[0-9]*" // Only allow numbers
+          placeholder="Age"
           {...register('age', {
             required: 'Age is required',
-            min: { value: 12, message: 'Must be at least 12' },
-            max: { value: 100, message: 'Unrealistic age' },
+            pattern: {
+              value: /^[0-9]+$/,
+              message: 'Age must be a number'
+            },
+            validate: {
+              min: (value) => {
+                const num = parseInt(value, 10);
+                return num >= 12 || 'Must be at least 12 years old';
+              },
+              max: (value) => {
+                const num = parseInt(value, 10);
+                return num <= 100 || 'Age must be less than 100';
+              }
+            }
           })}
-          type="number"
           className="w-full bg-gray-900 rounded px-2 py-2 outline-none"
-          placeholder="Age"
         />
         {errors.age && <p className="text-red-600 text-xs sm:text-sm">{errors.age.message}</p>}
       </div>

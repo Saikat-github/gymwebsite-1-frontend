@@ -14,8 +14,13 @@ const DayPassForm = () => {
   const [amount, setAmount] = useState(99);
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, plans } = useContext(AuthContext);
+  const dayPass = plans.find(plan => plan.title === "day-pass");
 
+
+  if (!dayPass) {
+    return <p className="text-center text-gray-400">Day Pass plan not found!</p>;
+  }
 
 
   const onSubmit = async (data) => {
@@ -33,13 +38,14 @@ const DayPassForm = () => {
         navigate('/payment-page', {
           state:
           {
-            dayPassId: result.id,
-            title: "Day-Pass",
-            price: amount,
+            amount,
+            planId: dayPass.title,
             userId: user.uid,
             email: user.email,
             name: user.displayName,
-            navigateTo: "/day-pass/get-passes"
+            dayPassId: result.id,
+            id: dayPass.id,
+            navigateTo: "/day-pass/get-passes",
           }
         });
       }
@@ -55,8 +61,8 @@ const DayPassForm = () => {
   return (
     <div className="relative bg-slate-950 text-white p-6 rounded-lg max-w-md mx-auto shadow-lg text-sm shadow-orange-600 my-6">
       <X
-      onClick={() => navigate('/day-pass')} 
-      className='w-6 absolute right-2 top-0.5 cursor-pointer'/>
+        onClick={() => navigate('/day-pass')}
+        className='w-6 absolute right-2 top-0.5 cursor-pointer' />
       <h2 className="text-2xl font-semibold mb-2 text-center">Day Pass : ₹99/1 day</h2>
 
       <form className="space-y-10" onSubmit={handleSubmit(onSubmit)}>
@@ -78,15 +84,27 @@ const DayPassForm = () => {
         <div>
           <label className="block mb-1">Age <span className="text-red-500">*</span></label>
           <input
+            inputMode="numeric" // Mobile keyboards will show numeric keypad
+            pattern="[0-9]*" // Only allow numbers
+            placeholder="Age"
             {...register('age', {
               required: 'Age is required',
-              valueAsNumber: true,
-              min: { value: 12, message: 'Must be at least 12' },
-              max: { value: 100, message: 'Unrealistic age' },
+              pattern: {
+                value: /^[0-9]+$/,
+                message: 'Age must be a number'
+              },
+              validate: {
+                min: (value) => {
+                  const num = parseInt(value, 10);
+                  return num >= 12 || 'Must be at least 12 years old';
+                },
+                max: (value) => {
+                  const num = parseInt(value, 10);
+                  return num <= 100 || 'Age must be less than 100';
+                }
+              }
             })}
-            type="number"
             className="w-full bg-gray-900 rounded px-2 py-2 outline-none"
-            placeholder="e.g. 25"
           />
           {errors.age && <p className="text-red-600 text-xs sm:text-sm">{errors.age.message}</p>}
         </div>
@@ -113,15 +131,27 @@ const DayPassForm = () => {
         <div>
           <label className="block mb-1">Number of Days <span className="text-red-500">*</span></label>
           <input
+            inputMode="numeric" // Mobile keyboards will show numeric keypad
+            pattern="[0-9]*" // Only allow numbers
+            placeholder="For how many days?"
             {...register('noOfDays', {
               required: 'Number of days is required',
-              valueAsNumber: true,
-              min: { value: 1, message: 'Must be at least 1' },
-              max: { value: 7, message: 'Maximum 7 days allowed' },
+              pattern: {
+                value: /^[0-9]+$/,
+                message: 'Age must be a number'
+              },
+              validate: {
+                min: (value) => {
+                  const num = parseInt(value, 10);
+                  return num >= 1 || 'Must be at least 1';
+                },
+                max: (value) => {
+                  const num = parseInt(value, 10);
+                  return num <= 7 || 'Maximum 7 days allowed';
+                }
+              }
             })}
-            type="number"
             className="w-full bg-gray-900 rounded px-2 py-2 outline-none"
-            placeholder="For how many days?"
             onChange={(e) => setAmount(e.target.value * 99)}
           />
           {errors.noOfDays && <p className="text-red-600 text-xs sm:text-sm">{errors.noOfDays.message}</p>}

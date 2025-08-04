@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
-import { UserProfileCard } from '../components'
-import { AuthContext } from '../context/AuthContext'
+import { UserProfileCard } from '../../components'
+import { AuthContext } from '../../context/AuthContext'
 import { Navigate } from 'react-router-dom'
 
 

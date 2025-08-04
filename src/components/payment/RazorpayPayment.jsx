@@ -11,12 +11,14 @@ import { useNavigate } from "react-router-dom";
 const RazorpayPayment = ({ amount, planId, userId, email, name, dayPassId, id, navigateTo }) => {
   const { getMemberInfo } = useContext(AuthContext);
   const [loader, setLoader] = useState(false)
+
   const createOrder = httpsCallable(functions, 'createOrder');
   const verifyPayment = httpsCallable(functions, 'verifyPayment');
 
   const navigate = useNavigate();
 
   const handlePayment = async () => {
+    // return console.log(amount, planId, userId, email, name, dayPassId, id, navigateTo)
     try {
       setLoader(true);
       // Step 1: Create order
@@ -32,12 +34,15 @@ const RazorpayPayment = ({ amount, planId, userId, email, name, dayPassId, id, n
 
       // Step 2: Initialize Razorpay
       const options = {
-       key,
+        key,
         amount: amount * 100,
         currency: 'INR',
         name: 'Minimalist Gyms',
         description: `${planId} Membership`,
         order_id: orderId,
+        notify: {
+          email: true // Email notifications to customer
+        },
         handler: async (response) => {
           try {
             // Step 3: Verify payment
@@ -49,7 +54,6 @@ const RazorpayPayment = ({ amount, planId, userId, email, name, dayPassId, id, n
 
             if (verificationResult.data.success) {
               toast.success(verificationResult.data.message || 'Payment successful!');
-              // ✅ Await the update before navigating
               await getMemberInfo();
               navigate(navigateTo)
             }
