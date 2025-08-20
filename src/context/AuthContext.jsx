@@ -39,6 +39,7 @@ const AuthContextProvider = ({ children }) => {
       setLoading(true);
       const result = await getDocuments('plans');
       if (result.success) {
+        console.log(result.data)
         setPlans(result.data);
       } else {
         toast.error('Failed to fetch plans');

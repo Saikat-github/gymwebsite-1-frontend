@@ -41,13 +41,13 @@ bg-opacity-50 z-50 mx-2">
             <div className="mt-6 flex justify-end space-x-4">
               <button
                 onClick={onCancel}
-                className="px-4 py-2 bg-gray-300 text-slate-800 rounded hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 text-slate-800 rounded hover:bg-gray-400 cursor-pointer"
               >
                 No
               </button>
               <button
                 onClick={onConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
               >
                 Yes
               </button>
